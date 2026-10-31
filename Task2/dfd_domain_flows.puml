@@ -1,102 +1,98 @@
 
 @startuml
-!include <C4/C4_Container>
+left to right direction
 
-LAYOUT_LEFT_RIGHT()
+title Будущее 2.0 — DFD L1: потоки данных четырёх бизнес-доменов
 
-title Будущее 2.0 — целевая архитектура через год (C4 Container)
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam defaultTextAlignment center
+skinparam ArrowFontSize 10
+skinparam packageFontStyle bold
+skinparam rectangleRoundCorner 8
 
-Person(business, "Бизнес-пользователь", "Аналитик или руководитель")
-Person(operator, "Врач / оператор клиники", "Работа с пациентами")
+actor "E1\nВрач клиники" as E1
+actor "E2\nРуководитель / аналитик" as E2
+rectangle "E3\nLegacy DWH / ESB\n(переходный источник через адаптер)" as E3 #F5F5F5
 
-System_Boundary(future, "Будущее 2.0") {
+package "Домен 1. Клинические сервисы" as CLINIC #EAF4FF {
+  rectangle "P1\nКлиническая система\n(операции и медицинские API)" as P1
+  database "D1\nМедицинская БД\n(карты, история, исследования)" as D1
+  rectangle "P2\nПубликатор бизнес-KPI\n(немедицинские агрегаты)" as P2
+}
 
-  Container_Boundary(clinic_domain, "Домен: Клинические сервисы") {
-    Container(clinic_app, "Клиническая система", "Web / API", "Медицинские операции и процессы")
-    ContainerDb(med_db, "Медицинская БД", "OLTP + File Storage", "Карты, истории болезни, исследования")
-    Container(clinic_kpi, "Публикатор бизнес-показателей", "API / Batch", "Только разрешённые агрегаты без медицинских сведений")
-  }
+package "Домен 2. Медицинский ИИ" as MEDAI #EDEBFF {
+  rectangle "P3\nСервисы медицинского ИИ\n(диагностический анализ)" as P3
+}
 
-  Container_Boundary(ai_domain, "Домен: Медицинский ИИ") {
-    Container(ai, "Сервисы медицинского ИИ", "Python", "Диагностические модели и обработка медицинских данных")
-  }
+package "Домен 3. Банковские сервисы" as BANK #E8F6ED {
+  rectangle "P4\nСервис счетов и платежей" as P4
+  database "D2\nБД счетов и операций" as D2
+  rectangle "P5\nКредитный сервис" as P5
+  database "D3\nБД кредитов" as D3
+  rectangle "P6\nПубликатор банковских данных\n(разрешённые data products)" as P6
+}
 
-  Container_Boundary(bank_domain, "Домен: Банковские сервисы") {
-    Container(accounts, "Сервис счетов и платежей", "Go / Java", "Счета, операции и платежи")
-    ContainerDb(accounts_db, "БД счетов и операций", "OLTP", "Данные счетов и платежей")
+package "Домен 4. Корпоративное управление" as HQ #FFF1E6 {
+  rectangle "P7\nКорпоративные сервисы\n(ERP / HR / закупки / финансы)" as P7
+  database "D4\nБД корпоративных данных" as D4
+}
 
-    Container(loans, "Кредитный сервис", "Go / Java", "Кредитные продукты и обслуживание кредитов")
-    ContainerDb(loans_db, "БД кредитов", "OLTP", "Кредитные договоры и обязательства")
-
-    Container(bank_data, "Публикатор банковских данных", "API / Events / Batch", "Разрешённые аналитические наборы и контроль состава данных")
-  }
-
-  Container_Boundary(hq_domain, "Домен: Корпоративное управление") {
-    Container(hq, "Сервисы корпоративного управления", "API / ERP / HR", "Управление персоналом, закупками, ресурсами и корпоративными финансами")
-    ContainerDb(hq_db, "БД корпоративных данных", "OLTP", "Персонал, закупки, инвентаризация и корпоративные финансы")
-  }
-
-  Container_Boundary(data_platform, "Общая платформа данных") {
-    Container(ingest, "Загрузка данных", "CDC / Kafka / API / Batch", "Приём разрешённых доменных данных")
-    Container(transform, "Обработка данных", "Airflow + Spark / SQL", "Проверки качества и трансформации")
-    ContainerDb(lake, "Lakehouse", "S3 + Parquet / Iceberg", "Bronze / Silver / Gold, без медицинских карт и исследований")
-    Container(catalog, "Каталог данных", "OpenMetadata / DataHub", "Метаданные, владельцы, lineage")
-    Container(query, "SQL и семантический слой", "Trino + Metrics API", "Единые KPI, доступ к витринам и лимиты запросов")
-    Container(portal, "Портал самообслуживания", "Web / Report Builder", "Конструктор отчётов и выбор доступных данных")
-    Container(bi, "BI-система", "Power BI", "Дашборды и визуализация")
-    Container(iam, "IAM и аудит", "SSO / RBAC / ABAC", "Контроль доступа и журналирование")
-  }
-
-  Container_Boundary(legacy_domain, "Legacy / переходный период") {
-    ContainerDb(legacy_dwh, "Legacy DWH", "SQL Server 2008", "Исторические данные и старая бизнес-логика")
-    Container(legacy_esb, "Legacy ESB", "Apache Camel", "Существующие интеграции")
-    Container(legacy_adapter, "Адаптер миграции", "API / Batch", "Контролируемый перенос разрешённых данных")
-  }
+package "Общая платформа данных — НЕ бизнес-домен" as PLATFORM #F1F3F6 {
+  rectangle "P8\nЗагрузка / ingestion\n(API / Events / CDC / Batch)" as P8
+  rectangle "P9\nПроверки качества\nи трансформации" as P9
+  database "D5\nLakehouse\n(Bronze / Silver / Gold)" as D5
+  rectangle "P10\nКаталог и контракты\n(метаданные / lineage)" as P10
+  rectangle "P11\nSQL + семантический слой\n(разрешённые KPI)" as P11
+  rectangle "P12\nПортал самообслуживания\nи BI" as P12
+  rectangle "P13\nIAM / аудит\n(SSO / RBAC / ABAC)" as P13
 }
 
 ' Клинические операции
-Rel(operator, clinic_app, "Работает с пациентами", "HTTPS")
-Rel(clinic_app, med_db, "Читает и изменяет данные")
-Rel(clinic_app, ai, "Запрос диагностики", "Защищённый API")
-Rel(ai, clinic_app, "Результат диагностики", "Защищённый API")
-Rel(clinic_app, clinic_kpi, "Передаёт разрешённые бизнес-показатели")
+E1 --> P1 : Запросы врача
+P1 --> D1 : Запись меддокументов
+D1 --> P1 : Медкарта / история
+P1 --> P3 : Минимальный медконтекст\nзащищённый API
+P3 --> P1 : Результат анализа
+P1 --> P2 : Разрешённые\nучётные бизнес-показатели
 
 ' Банковские операции
-Rel(accounts, accounts_db, "Операции по счетам")
-Rel(loans, loans_db, "Кредитные операции")
-Rel(accounts, bank_data, "Публикует разрешённые данные")
-Rel(loans, bank_data, "Публикует разрешённые данные")
+P4 --> D2 : Запись операций
+D2 --> P4 : Данные счетов
+P5 --> D3 : Запись кредитов
+D3 --> P5 : Данные кредитов
+P4 --> P6 : Допустимые показатели\nсчетов и платежей
+P5 --> P6 : Допустимые показатели\nкредитов
 
 ' Корпоративное управление
-Rel(hq, hq_db, "Операционные записи")
+P7 --> D4 : Корпоративный учёт
+D4 --> P7 : Данные закупок / ресурсов
 
-' Передача данных в аналитику
-Rel(clinic_kpi, ingest, "Немедицинские агрегаты", "API / Batch")
-Rel(bank_data, ingest, "Банковские data products", "API / Events / Batch")
-Rel(hq, ingest, "Корпоративные data products", "API / CDC")
+' Передача разрешённых данных в аналитику
+P2 --> P8 : Агрегаты клиник\nБЕЗ медицинских сведений
+P6 --> P8 : Банковские data products\nпо контракту
+P7 --> P8 : Корпоративные KPI\nпо контракту
+E3 --> P8 : Разрешённая история\nчерез адаптер миграции
 
-' Legacy
-Rel(legacy_dwh, legacy_adapter, "Исторические данные")
-Rel(legacy_esb, legacy_adapter, "Переходные интеграции")
-Rel(legacy_adapter, ingest, "Разрешённые данные", "Batch / API")
+' Аналитическая обработка
+P10 --> P8 : Версии контрактов,\nклассификация, правила приёма
+P8 --> P9 : Проверенные входные наборы
+P9 --> D5 : Очищенные наборы и витрины
+P9 --> P10 : Метаданные / lineage / качество
 
-' Платформа данных
-Rel(ingest, transform, "Передаёт данные")
-Rel(transform, lake, "Записывает данные и витрины")
-Rel(catalog, ingest, "Контракты и правила")
-Rel(catalog, lake, "Метаданные и lineage")
-Rel(query, lake, "Читает разрешённые витрины", "SQL")
+' Самообслуживание и отчётность
+E2 --> P12 : Выбор отчёта и показателей
+P12 --> P10 : Поиск разрешённых наборов
+P10 --> P12 : Метаданные каталога
+P12 --> P11 : Запрос KPI / срезов
+P11 --> D5 : SQL-запросы к витринам
+D5 --> P11 : Данные витрин
+P11 --> P12 : Результат отчёта
 
-' Самообслуживание
-Rel(business, portal, "Создаёт отчёты", "HTTPS")
-Rel(business, bi, "Просматривает дашборды", "HTTPS")
-Rel(portal, catalog, "Ищет доступные данные")
-Rel(portal, query, "Выполняет запросы", "API")
-Rel(bi, query, "Получает показатели", "SQL / API")
-
-' Безопасность
-Rel(portal, iam, "Аутентификация и аудит")
-Rel(query, iam, "Авторизация запросов")
-Rel(bi, iam, "SSO")
+' Контроль доступа
+P12 --> P13 : SSO / проверка прав / аудит
+P11 --> P13 : Проверка доступа к данным
 
 @enduml
