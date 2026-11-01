@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 *.tfstate
+**/.terraform/
+*.tfplan
+*.tfstate*
+crash.log
 # Distribution / packaging
 .Python
 build/
