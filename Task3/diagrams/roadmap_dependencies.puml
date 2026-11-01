@@ -1,0 +1,33 @@
+@startuml
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+skinparam rectangle {
+  RoundCorner 12
+}
+left to right direction
+
+title Будущее 2.0 — Task3: этапYы и критические зависимости
+
+rectangle "R0 · M1–M2\nАрхитектура, владельцы,\nконтракты и критерии\nGate G0" as R0 #DDEAF7
+rectangle "R1 · M2–M4\nIAM, запрет выгрузок,\nрезервирование и аудит\nGate G1" as R1 #E1F3EE
+rectangle "R2 · M3–M5\nIngestion, каталог,\nпилот Lakehouse\nGate G2" as R2 #DDEAF7
+rectangle "R3 · M4–M7\n3 data products,\nGold и единые KPI\nGate G3" as R3 #DDEAF7
+rectangle "R4 · M5–M8\nПортал и BI: MVP\nGate G4" as R4 #E1F3EE
+rectangle "R5 · M4–M10\nНезависимые API/релизы,\nмедицинский ИИ, миграция\nGate G5" as R5 #FEF0D9
+rectangle "R6 · M6–M10\nНагрузка, мониторинг,\nDR, изоляция compute\nGate G6" as R6 #E1F3EE
+rectangle "R7 · M9–M12\nТиражирование, обучение,\nбезопасное снятие legacy\nGate G7" as R7 #E8DFFA
+
+R0 --> R1 : политики
+R1 --> R2 : защитные барьеры
+R2 --> R3 : ingestion и каталог
+R3 --> R4 : разрешённые витрины
+R1 --> R4 : IAM и аудит
+R0 --> R5 : API-контракты
+R3 --> R6 : наборы для нагрузки
+R4 --> R7 : результат MVP
+R5 --> R7 : независимые релизы
+R6 --> R7 : подтверждение SLO/DR
+
+@enduml
