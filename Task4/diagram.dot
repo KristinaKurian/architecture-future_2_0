@@ -1,0 +1,35 @@
+digraph Task4 {
+ graph [rankdir=TB,bgcolor="white",fontname="DejaVu Sans",pad="0.35",nodesep="0.43",ranksep="0.68",splines=polyline,compound=true,label="Будущее 2.0 — Task4: Terraform",labelloc=t,fontsize=20,fontcolor="#1B3650"];
+ node [shape=box,style="rounded,filled",fillcolor="#F7FAFF",color="#7D9EBB",fontname="DejaVu Sans",fontsize=11,margin="0.15,0.12"];
+ edge [color="#6C849B",arrowsize=0.7,fontname="DejaVu Sans",fontsize=10];
+ engineer [label="DevOps\nterraform plan / apply",fillcolor="#D9ECFF"];
+ internet [label="Интернет",shape=ellipse,fillcolor="#FFF1D3"];
+ subgraph cluster_tf {
+  label="УПРАВЛЯЕТ TERRAFORM"; color="#65A4D6"; style="rounded,filled";fillcolor="#F2F8FF";
+  vpc [label="VPC Network\nсетевая изоляция",fillcolor="#DDF0FE"];
+  subgraph cluster_public { label="Публичная подсеть 10.40.10.0/24"; style="rounded,filled";color="#88B9DC";fillcolor="#EDF6FF";
+   sg [label="Security Group\nSSH 22 — admin /32\nHTTPS 443",fillcolor="#F2EAFE"];
+   vm [label="1 × VM portal\nUbuntu / 2 vCPU / 4 GB RAM\nПубличный IPv4",fillcolor="#D5EDFF"];
+   hdd [label="HDD 20 GB\nboot",shape=cylinder,fillcolor="#DDF4E8"];
+   ssd [label="SSD 10 GB\ndata",shape=cylinder,fillcolor="#DDF4E8"];
+   sg -> vm [style=dashed,label="rules"];
+   vm -> hdd [label="boot",arrowhead=none];vm -> ssd [label="attached",arrowhead=none];
+  }
+  subgraph cluster_private {label="Приватная подсеть 10.40.20.0/24 (без VM)";style="rounded,filled";color="#80BDA4";fillcolor="#EDF8F3";
+   route [label="Route table\n0.0.0.0/0 → NAT",fillcolor="#F3E5FF"];
+   nat [label="NAT Gateway\nготов для будущих приватных VM",fillcolor="#F9E6F3"];
+   route -> nat [label="маршрут"];
+  }
+  vpc -> vm [label="public subnet"];
+  vpc -> route [label="private subnet"];
+ }
+ subgraph cluster_manual { label="ВНЕ TERRAFORM: отдельно";style="rounded,filled";color="#D8A55E";fillcolor="#FFF8EC";
+  provision [label="IAM / CLI / credentials / квоты",fillcolor="#FFF0D5"];
+  software [label="Установка портала / DNS / TLS\nФорматирование SSD / мониторинг",fillcolor="#FFF0D5"];
+ }
+ engineer -> vpc [label="apply"];
+ internet -> vm [label="public NAT IP / SSH"];
+ nat -> internet [label="только исходящий egress (после VM)"];
+ vm -> software [style=dashed,label="после создания"];
+ provision -> engineer [style=dashed];
+}

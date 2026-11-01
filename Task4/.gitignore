@@ -1,0 +1,15 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfplan.*
+crash.log
+crash.*.log
+*.auto.tfvars
+*.auto.tfvars.json
+*.tfvars.json
+*.tfvars.backup
+*.log
+.DS_Store
+# terraform.tfvars is committed intentionally: no credentials, only lab settings.
+# .terraform.lock.hcl should be committed AFTER a successful terraform init.
